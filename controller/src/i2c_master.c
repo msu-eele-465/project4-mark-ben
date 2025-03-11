@@ -19,6 +19,7 @@ void i2c_master_setup(void) {
     UCB0CTLW0 |= UCMODE_3;              // I2C Mode
     UCB0CTLW0 |= UCMST;                 // Master
     UCB0CTLW0 |= UCTR;                  // Tx
+    UCB0TBCNT = 0x02;                   // Number of bytes
     
     UCB0CTLW0 &= ~UCSWRST;              // Take out of reset
 
@@ -40,7 +41,7 @@ void i2c_master_setup(void) {
 
 }
 
-void i2c_write(unsigned int slaveAddress, unsigned int data, unsigned int length) {
+void i2c_write(unsigned int slaveAddress, unsigned int data) {
     UCB0I2CSA = slaveAddress;
     UCB0CTLW0 |= UCTR;                  // Transmit Mode
     UCB0CTLW0 |= UCTXSTT;               // Generate Start Condition
