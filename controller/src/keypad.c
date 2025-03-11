@@ -1,5 +1,8 @@
-
-
+#include "intrinsics.h"
+#include <msp430.h>
+#include <stdbool.h>
+#include <msp430fr2355.h>
+#include <C:\Users\benwe\OneDrive\Desktop\MicroControllers\EELE465\project4-mark-ben\controller\app\main.c>
 
 char code[] = "5381";
 char keypad_input[4] = {};
@@ -7,6 +10,13 @@ volatile int input_index = 0;
 
 const unsigned rowPins[4] = {BIT4, BIT5, BIT6, BIT7};
 const unsigned colPins[4] = {BIT0, BIT1, BIT2, BIT3};
+
+const char keypad[4][4] = {                                 // Matrix rep. of keypad for pressedKey function
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'},
+};
 
 void setupKeypad() {
     P1DIR |= (BIT4 | BIT5 | BIT6 | BIT7);        // rows = OUTPUT

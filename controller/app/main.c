@@ -66,6 +66,8 @@
 //******************************************************************************
 #include <msp430.h>
 
+volatile int state_variable = 0;
+
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer

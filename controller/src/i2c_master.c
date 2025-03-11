@@ -7,8 +7,6 @@ void i2c_master_setup(void) {
     P1SEL1 &= ~(BIT2 | BIT3);           // eUSCI_B0
     P1SEL0 |= (BIT2 | BIT3);
 
-    P4SEL4 &= ~(BIT6 | BIT7);           // eUSCI_B1
-    P4SEL0 |= (BIT6 | BIT7);
 
     //-- eUSCI_B0 --
     UCB0CTLW0 = UCSWRST;
@@ -22,22 +20,6 @@ void i2c_master_setup(void) {
     UCB0TBCNT = 0x02;                   // Number of bytes
     
     UCB0CTLW0 &= ~UCSWRST;              // Take out of reset
-
-/*     //-- eUSCI_B1 --
-    UCB1CTLW0 = UCSWRST;
-
-    UCB1CTLW0 |= UCSSEL_3;              // SMCLK
-    UCB1CTLW0 = 10;                     // Divider
-
-    UCB1CTLW0 |= UCMODE_3;              // I2C Mode
-    UCB1CTLW0 |= UCMST;                 // Master
-    UCB1CTLW0 |= UCTR;                  // Tx
-    
-
-    UCB1TBCNT = sizeof(packet);         // packet size
-
-    UCB1CTLW0 &= ~UCSWRST;              // Take out of reset */
-
 
 }
 
