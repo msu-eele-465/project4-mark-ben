@@ -65,6 +65,7 @@
 //   Built with IAR Embedded Workbench v6.50.0 & Code Composer Studio v6.2.0
 //******************************************************************************
 #include <msp430.h>
+#include <..\src\keypad.c> 
 
 volatile int state_variable = 0;
 
@@ -72,6 +73,8 @@ int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
     
+    setup_keypad();
+
     P1OUT &= ~BIT0;                         // Clear P1.0 output latch for a defined power-on state
     P1DIR |= BIT0;                          // Set P1.0 to output direction
 
@@ -82,5 +85,23 @@ int main(void)
     {
         P1OUT ^= BIT0;                      // Toggle P1.0 using exclusive-OR
         __delay_cycles(100000);             // Delay for 100000*(1/MCLK)=0.1s
+
+        char key = pressed_key();
+        if (state_variable == 0 || state_variable == 2) {                      // Locked
+            
+            if (key != '\0') {                                                 // Check for key
+
+                state_variable = 2;                                            // if key, unlocking
+                if (input_index < 3) {                                         
+                    keypad_input[input_index] = key;
+                    input_index++;
+                } else if (input_index == 3) {                                 // if 4 keys, check unlock
+                    
+                    check_key();
+                }
+            }   
+        }
+
+
     }
 }

@@ -2,7 +2,7 @@
 #include <msp430.h>
 #include <stdbool.h>
 #include <msp430fr2355.h>
-#include <C:\Users\benwe\OneDrive\Desktop\MicroControllers\EELE465\project4-mark-ben\controller\app\main.c>
+#include <..\controller\app\main.c>
 
 char code[] = "5381";
 char keypad_input[4] = {};
@@ -18,7 +18,7 @@ const char keypad[4][4] = {                                 // Matrix rep. of ke
     {'*', '0', '#', 'D'},
 };
 
-void setupKeypad() {
+void setup_keypad() {
     P1DIR |= (BIT4 | BIT5 | BIT6 | BIT7);        // rows = OUTPUT
     P6DIR &= ~(BIT0 | BIT1 | BIT2 | BIT3);              // cols = INPUT
     P6REN |= (BIT0 | BIT1 | BIT2 | BIT3);               // Pulldown resistors on cols
@@ -26,7 +26,7 @@ void setupKeypad() {
     P1OUT &= ~(BIT4 | BIT5 | BIT6 | BIT7);              // rows low
 }
 
-char pressedKey() {
+char pressed_key() {
     int row, col;
     for (row = 0; row < 4; row++) {
         P1OUT &= ~(BIT4 | BIT5 | BIT6 | BIT7);              // Set rows low
