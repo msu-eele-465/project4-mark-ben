@@ -82,7 +82,7 @@ int main(void)
     P2OUT &= ~BIT0;
     P2DIR |= BIT0;
 
-    P1OUT &= ~BIT0; // P1.1 is R/W
+    P1OUT &= ~BIT0; // P1.0 is R/W
     P1DIR |= (BIT0 | BIT1 | BIT4 | BIT5 | BIT6 | BIT7);
 
     P2OUT &= ~BIT6; // RS PIN
