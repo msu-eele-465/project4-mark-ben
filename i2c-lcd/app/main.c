@@ -2,6 +2,11 @@
 #include <msp430fr2310.h>
 #include <stdbool.h>
 
+// ------- Global Variables ------------
+int loop_count;
+// -------------------------------------
+
+
 void lcd_raw_send(int send_data, int num) {
     int send_data_temp;
     int nibble;
@@ -27,12 +32,12 @@ void lcd_raw_send(int send_data, int num) {
 
         // Set enable high
         P1OUT |= BIT1;
-        _delay_cycles(100);
+        _delay_cycles(1000);
 
         // Wait and drop enable
-        _delay_cycles(100);
+        _delay_cycles(1000);
         P1OUT &= ~BIT1;
-        _delay_cycles(100);
+        _delay_cycles(1000);
 
         i++;
     }
@@ -45,32 +50,48 @@ void lcd_raw_send(int send_data, int num) {
     while (busy != 0) {
         _delay_cycles(1000);
         P1OUT |= BIT1;       // Enable high
-        _delay_cycles(100);
+        _delay_cycles(1000);
 
         busy = P1IN & BIT7;  // Read busy
 
-        _delay_cycles(100);
+        _delay_cycles(1000);
         P1OUT &= ~BIT1;     // Enable low
 
-        _delay_cycles(100);
+        _delay_cycles(1000);
         P1OUT |= BIT1;     // Enable high
-        _delay_cycles(200);
+        _delay_cycles(2000);
         P1OUT &= ~BIT1;    // Enable low
     }
+    _delay_cycles(1000);
 
     P1DIR |= (BIT4 | BIT5 | BIT6 | BIT7);  // Set output
     P1OUT &= ~BIT0;
 }
 
 
-void lcd_string_write(char* string, int n) {
+void lcd_string_write(char* string) {
     int i = 0;
 
-    while (i < n) {
+    while (string[i] != '\0') {
         P2OUT |= BIT6;
         lcd_raw_send((int)string[i], 2);
         i++;
     }
+}
+
+void update_patern(char* string) {
+    lcd_raw_send(0b00000010, 2);
+
+    lcd_string_write(string);
+}
+
+void update_key(char c) {
+    char string[] = {'\0', '\0'};
+    string[0] = c;
+
+    lcd_raw_send(0xCF, 2);
+
+    lcd_string_write(string); 
 }
 
 int main(void)
@@ -98,13 +119,33 @@ int main(void)
     lcd_raw_send(0b00000001, 2); // Clear display
     lcd_raw_send(0b00000110, 2); // Increment mode, entire shift off
 
-    lcd_string_write("Hello! :)", 9);
+    update_patern("Pattern 1");
+    update_key('Q');
 
+    loop_count = 0;
     while (true)
     {
         P2OUT ^= BIT0;
 
         // Delay for 100000*(1/MCLK)=0.1s
         __delay_cycles(100000);
+
+        switch(loop_count) {
+            case 10:
+                update_key('X');
+                break;
+            case 20:
+                update_patern("Pattern 2");
+                break;
+            case 30:
+                update_key('Q');
+                break;
+            case 40:
+                update_patern("Pattern 1");
+                loop_count = 0;
+                break;
+        }
+
+        loop_count++;
     }
 }
