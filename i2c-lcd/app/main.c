@@ -3,7 +3,10 @@
 #include <stdbool.h>
 
 // ------- Global Variables ------------
-int loop_count;
+volatile char button_pressed = ' ';
+volatile int curr_pattern = 0;
+volatile int state = 0;
+const int slave_addr = 0x02;
 // -------------------------------------
 
 
@@ -79,7 +82,7 @@ void lcd_string_write(char* string) {
     }
 }
 
-void update_patern(char* string) {
+void update_pattern(char* string) {
     lcd_raw_send(0b00000010, 2);
 
     lcd_string_write(string);
@@ -96,9 +99,15 @@ void update_key(char c) {
 
 int main(void)
 {
+    char last_pressed;
+    int last_pattern;
+
     // Stop watchdog timer
     
     WDTCTL = WDTPW | WDTHOLD;
+
+    last_pressed = button_pressed;
+    last_pattern = curr_pattern;
 
     P2OUT &= ~BIT0;
     P2DIR |= BIT0;
@@ -108,6 +117,17 @@ int main(void)
 
     P2OUT &= ~BIT6; // RS PIN
     P2DIR |= BIT6;
+
+    P1SEL0 |= BIT2;  // Confiure I2C
+    P1SEL0 |= BIT3;
+
+    // Init I2C
+    UCB0CTLW0 |= UCSWRST;  // Software reset
+    UCB0CTLW0 &= ~UCSSEL__SMCLK;  // Input clock
+    UCB0CTLW0 |= UCMODE_3;  // I2C mode
+    UCB0I2COA0 = slave_addr; // My slave address
+    UCB0CTLW0 &= ~UCSWRST;  // Disable software reset
+    UCB0IE |= (UCRXIE0 | UCSTPIE); // Enable interrupts
 
     // Disable low-power mode / GPIO high-impedance
     PM5CTL0 &= ~LOCKLPM5;
@@ -119,10 +139,12 @@ int main(void)
     lcd_raw_send(0b00000001, 2); // Clear display
     lcd_raw_send(0b00000110, 2); // Increment mode, entire shift off
 
-    update_patern("Pattern 1");
+    update_pattern("Pattern 1");
     update_key('Q');
 
-    loop_count = 0;
+    __enable_interrupt();
+
+
     while (true)
     {
         P2OUT ^= BIT0;
@@ -130,22 +152,45 @@ int main(void)
         // Delay for 100000*(1/MCLK)=0.1s
         __delay_cycles(100000);
 
-        switch(loop_count) {
-            case 10:
-                update_key('X');
-                break;
-            case 20:
-                update_patern("Pattern 2");
-                break;
-            case 30:
-                update_key('Q');
-                break;
-            case 40:
-                update_patern("Pattern 1");
-                loop_count = 0;
-                break;
+        if (last_pattern != curr_pattern) {
+            switch (curr_pattern) {
+                case 0:
+                    update_pattern("Pattern 0");
+                    break;
+                case 1:
+                    update_pattern("Pattern 1");
+                    break;
+            }
+            last_pattern = curr_pattern;
         }
 
-        loop_count++;
+        if (last_pressed != button_pressed) {
+            update_key(button_pressed);
+            last_pressed = button_pressed;
+        }
+    }
+}
+
+#pragma vector=EUSCI_B0_VECTOR
+__interrupt void EUSCI_B0_I2C_ISR(void){
+    int current = UCB0IV;
+
+    switch(current) {
+    case 0x08: // Rx stop condition
+        state = 0;
+        break;
+    case 0x18: // Rx data
+        switch(state) {
+        case 0: // Rx address
+            break;
+        case 1: // Rx pattern
+            curr_pattern = UCB0RXBUF;
+            break;
+        case 2: // Rx character
+            button_pressed = (char)(UCB0RXBUF);
+            break;
+        }
+        state++;
+        break;
     }
 }
