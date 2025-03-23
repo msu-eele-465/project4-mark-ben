@@ -2,11 +2,11 @@
 #include <msp430.h>
 #include <stdbool.h>
 #include <msp430fr2355.h>
-#include <..\controller\app\main.c>
+#include "keypad.h"
 
 char code[] = "5381";
-char keypad_input[4] = {};
-volatile int input_index = 0;
+
+
 
 const unsigned rowPins[4] = {BIT4, BIT5, BIT6, BIT7};
 const unsigned colPins[4] = {BIT0, BIT1, BIT2, BIT3};

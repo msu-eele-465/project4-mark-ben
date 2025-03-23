@@ -65,9 +65,11 @@
 //   Built with IAR Embedded Workbench v6.50.0 & Code Composer Studio v6.2.0
 //******************************************************************************
 #include <msp430.h>
-#include <..\src\keypad.c> 
-
+#include "../src/keypad.h"
 volatile int state_variable = 0;
+char keypad_input[4] = {};
+volatile int input_index = 0;
+
 
 int main(void)
 {

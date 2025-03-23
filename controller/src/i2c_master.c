@@ -12,7 +12,7 @@ void i2c_master_setup(void) {
     UCB0CTLW0 = UCSWRST;
 
     UCB0CTLW0 |= UCSSEL_3;              // SMCLK
-    UCB0CTLW0 = 10;                     // Divider
+    UCB0BRW = 10;                     // Divider
 
     UCB0CTLW0 |= UCMODE_3;              // I2C Mode
     UCB0CTLW0 |= UCMST;                 // Master
@@ -33,4 +33,6 @@ void i2c_write(unsigned int slaveAddress, unsigned int data) {
 
     while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
     UCB0CTLW0 |= UCTXSTP;               // Stop condition
+
+    while (UCB0CTLW0 & UCTXSTP);
 }
