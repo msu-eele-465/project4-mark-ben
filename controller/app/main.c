@@ -66,16 +66,37 @@
 //******************************************************************************
 #include <msp430.h>
 #include "../src/keypad.h"
+#include "../src/i2c_master.h"
+
+#define LEDBAR 0X01
+#define LCD 0X02
+
+
 volatile int state_variable = 0;
 char keypad_input[4] = {};
 volatile int input_index = 0;
 
+void setup_heartbeat() {
+    // --    LED   --
+    
+    P6DIR |= BIT6;                                          // P6.6 as OUTPUT
+    P6OUT |= BIT6;                                          // Start LED off
+
+    // -- Timer B0 --
+    TB0R = 0;
+    TB0CCTL0 = CCIE;                                        // Enable Interrupt
+    TB0CCR0 = 32820;                                        // 1 sec timer
+    TB0EX0 = TBIDEX__8;                                     // D8
+    TB0CTL = TBSSEL__SMCLK | MC__UP | ID__4;                // Small clock, Up counter,  D4
+    TB0CCTL0 &= ~CCIFG;
+}
 
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
     
     setup_keypad();
+    setup_heartbeat();
 
     P1OUT &= ~BIT0;                         // Clear P1.0 output latch for a defined power-on state
     P1DIR |= BIT0;                          // Set P1.0 to output direction
@@ -85,8 +106,7 @@ int main(void)
 
     while(1)
     {
-        P1OUT ^= BIT0;                      // Toggle P1.0 using exclusive-OR
-        __delay_cycles(100000);             // Delay for 100000*(1/MCLK)=0.1s
+
 
         char key = pressed_key();
         if (state_variable == 0 || state_variable == 2) {                      // Locked
@@ -102,8 +122,93 @@ int main(void)
                     check_key();
                 }
             }   
+        } else if(state_variable == 1) {
+           switch (key) {                                          // Lock if D, otherwise update pattern/base transition period
+                case 'D':                                                   
+                    i2c_write_led(6);
+                    state_variable = 0;
+                    input_index = 0;
+                    //change_led_pattern(-1);                         
+                    memset(keypad_input, 0, sizeof(keypad_input));  // Clear input
+                    break;
+                case '0':
+                    i2c_write_led(0);
+                    i2c_write_lcd(0, '0');
+                    //change_led_pattern(0);
+                    break;
+                case '1':
+                    i2c_write_led(1);
+                    i2c_write_lcd(1, '1');
+                    //change_led_pattern(1);
+                    break;
+                case '2':
+                    i2c_write_led(2);
+                    i2c_write_lcd(2, '2');
+                    //change_led_pattern(2);
+                    break;
+                case '3':
+                    i2c_write_led(3);
+                    i2c_write_lcd(3, '3');
+                    //change_led_pattern(3);
+                    break;
+                case '4':
+                    i2c_write_lcd(4, '4');
+                    break;
+                case '5':
+                    i2c_write_lcd(5, '5');
+                    break;
+                case '6':
+                    i2c_write_lcd(6, '6');
+                    break;
+                case '7':
+                    i2c_write_lcd(7, '7');
+                    break;
+                case '8':
+                    i2c_write_lcd(8, '8');
+                    break;
+                case '9':
+                    i2c_write_lcd(9, '9');
+                    break;                        
+                case 'A':
+                    i2c_write_led(4);
+                    i2c_write_lcd(0, 'A');
+                    //if (base_tp > 0.25) {
+                    //    base_tp -= 0.25;
+                    break;
+                case 'B':
+                    i2c_write_led(5);
+                    i2c_write_lcd(0, 'B');
+                    //base_tp += 0.25;
+                    break;
+                case 'C':
+                    i2c_write_lcd(0, 'C');
+                    //base_tp += 0.25;
+                    break;
+                case '*':
+                    i2c_write_lcd(0, '*');
+                    //base_tp += 0.25;
+                    break;
+                case '#':
+                    i2c_write_lcd(0, '#');
+                    //base_tp += 0.25;
+                    break;                                                                                                 
+                default:
+                    input_index = 0;
+                    memset(keypad_input, 0, sizeof(keypad_input));  // Clear input
+                    break;
+           }
+           input_index = 0;
+           memset(keypad_input, 0, sizeof(keypad_input));
         }
+        update_led();
+        
 
 
     }
+}
+
+#pragma vector=TIMER0_B0_VECTOR
+__interrupt void Timer_B0_ISR(void) {
+    TB0CCTL0 &= ~CCIFG;
+    P6OUT ^= BIT6;
 }

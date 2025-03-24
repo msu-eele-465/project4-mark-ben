@@ -17,22 +17,39 @@ void i2c_master_setup(void) {
     UCB0CTLW0 |= UCMODE_3;              // I2C Mode
     UCB0CTLW0 |= UCMST;                 // Master
     UCB0CTLW0 |= UCTR;                  // Tx
-    UCB0TBCNT = 0x02;                   // Number of bytes
+    
     
     UCB0CTLW0 &= ~UCSWRST;              // Take out of reset
 
 }
 
-void i2c_write(unsigned int slaveAddress, unsigned int data) {
-    UCB0I2CSA = slaveAddress;
+void i2c_write_lcd(unsigned int pattNum, char character) {
+    UCB0I2CSA = 0x02;
+    UCB0TBCNT = 0x02;                   // Number of bytes
     UCB0CTLW0 |= UCTR;                  // Transmit Mode
     UCB0CTLW0 |= UCTXSTT;               // Generate Start Condition
 
     while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
-    UCB0TXBUF = data;                   // Send data byte
+    UCB0TXBUF = pattNum;                // Send data byte
+
+    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
+    UCB0TXBUF = character;                // Send data byte
 
     while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
     UCB0CTLW0 |= UCTXSTP;               // Stop condition
 
-    while (UCB0CTLW0 & UCTXSTP);
+}
+
+void i2c_write_led(unsigned int pattNum) {
+    UCB0I2CSA = 0x01;
+    UCB0TBCNT = 0x01;                   // Number of bytes
+    UCB0CTLW0 |= UCTR;                  // Transmit Mode
+    UCB0CTLW0 |= UCTXSTT;               // Generate Start Condition
+
+    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
+    UCB0TXBUF = pattNum;                   // Send data byte
+
+    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
+    UCB0CTLW0 |= UCTXSTP;               // Stop condition
+
 }
