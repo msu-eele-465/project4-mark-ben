@@ -27,7 +27,7 @@
                             </option>
                             <option id="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION.233189980" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION" value="21.6.1.LTS" valueType="string"/>
                             <targetPlatform id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.targetPlatformDebug.1659968208" name="Platform" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.targetPlatformDebug"/>
-                            <builder buildPath="${BuildDirectory}" id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.builderDebug.1998418635" name="GNU Make.Debug" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.builderDebug"/>
+                            <builder buildPath="${BuildDirectory}" id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.builderDebug.1998418635" keepEnvironmentInBuildfile="false" name="GNU Make" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.builderDebug"/>
                             <tool id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752" name="MSP430 Compiler" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug">
                                 <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.DEFINE.1519952026" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.DEFINE" valueType="definedSymbols">
                                     <listOptionValue value="__MSP430FR2310__"/>
@@ -77,6 +77,28 @@
                             </tool>
                         </toolChain>
                     </folderInfo>
+                    <fileInfo id="com.ti.ccstudio.buildDefinitions.MSP430.Debug.1222257304.app/main.c" name="main.c" rcbsApplicability="disable" resourcePath="app/main.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.1806155785">
+                        <tool id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.1806155785" name="MSP430 Compiler" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752">
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL.1987183309" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL._none" valueType="enumerated"/>
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED.1936561600" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED._none" valueType="enumerated"/>
+                        </tool>
+                    </fileInfo>
+                    <fileInfo id="com.ti.ccstudio.buildDefinitions.MSP430.Debug.1222257304.src/ledbar.c" name="ledbar.c" rcbsApplicability="disable" resourcePath="src/ledbar.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.715569540">
+                        <tool id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.715569540" name="MSP430 Compiler" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752">
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL.156771605" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL._none" valueType="enumerated"/>
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED.1439925899" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED._none" valueType="enumerated"/>
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.PARALLEL.1600737813" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.PARALLEL" value="" valueType="string"/>
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OTHER_FLAGS.1905559778" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OTHER_FLAGS" valueType="stringList">
+                                <listOptionValue value=""/>
+                            </option>
+                        </tool>
+                    </fileInfo>
+                    <fileInfo id="com.ti.ccstudio.buildDefinitions.MSP430.Debug.1222257304.src/ledbar_i2c_slave.c" name="ledbar_i2c_slave.c" rcbsApplicability="disable" resourcePath="src/ledbar_i2c_slave.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.433400164">
+                        <tool id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752.433400164" name="MSP430 Compiler" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.exe.compilerDebug.1911017752">
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL.133102817" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_LEVEL._none" valueType="enumerated"/>
+                            <option id="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED.1357717027" superClass="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED" value="com.ti.ccstudio.buildDefinitions.MSP430_21.6.compilerID.OPT_FOR_SPEED._none" valueType="enumerated"/>
+                        </tool>
+                    </fileInfo>
                 </configuration>
             </storageModule>
             <storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>

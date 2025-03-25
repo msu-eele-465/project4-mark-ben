@@ -67,10 +67,7 @@
 #include <msp430.h>
 #include "../src/keypad.h"
 #include "../src/i2c_master.h"
-
-#define LEDBAR 0X01
-#define LCD 0X02
-
+#include <string.h>
 
 volatile int state_variable = 0;
 char keypad_input[4] = {};
@@ -201,9 +198,6 @@ int main(void)
            memset(keypad_input, 0, sizeof(keypad_input));
         }
         update_led();
-        
-
-
     }
 }
 

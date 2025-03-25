@@ -16,6 +16,15 @@
                     }
                 }
             }
+        },
+        {
+            "name": "i2c-led-bar",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "i2c-led-bar",
+                "resourceId": "/i2c-led-bar"
+            }
         }
     ]
 }
