@@ -4,9 +4,11 @@
 
 // ------- Global Variables ------------
 volatile char button_pressed = ' ';
-volatile int curr_pattern = 0;
+volatile int curr_pattern = -1;
 volatile int state = 0;
-const int slave_addr = 0x02;
+int cursor = 0;
+int blink = 0;
+const int slave_addr = 0x0002;
 // -------------------------------------
 
 
@@ -120,14 +122,18 @@ int main(void)
 
     P1SEL0 |= BIT2;  // Confiure I2C
     P1SEL0 |= BIT3;
+    P1SEL1 &= ~BIT2;
+    P1SEL1 &= ~BIT3;
 
     // Init I2C
     UCB0CTLW0 |= UCSWRST;  // Software reset
-    UCB0CTLW0 &= ~UCSSEL__SMCLK;  // Input clock
+    UCB0CTLW0 &= ~UCSSEL_3;  // Input clock
     UCB0CTLW0 |= UCMODE_3;  // I2C mode
-    UCB0I2COA0 = slave_addr; // My slave address
+    UCB0I2COA0 = slave_addr | UCOAEN; // My slave address
+    //UCB0CTLW1 |= UCSWACK;
     UCB0CTLW0 &= ~UCSWRST;  // Disable software reset
     UCB0IE |= (UCRXIE0 | UCSTPIE); // Enable interrupts
+    //UCB0CTLW0 |= UCTXACK;
 
     // Disable low-power mode / GPIO high-impedance
     PM5CTL0 &= ~LOCKLPM5;
@@ -139,34 +145,61 @@ int main(void)
     lcd_raw_send(0b00000001, 2); // Clear display
     lcd_raw_send(0b00000110, 2); // Increment mode, entire shift off
 
-    update_pattern("Pattern 1");
-    update_key('Q');
-
     __enable_interrupt();
 
 
     while (true)
     {
-        P2OUT ^= BIT0;
 
         // Delay for 100000*(1/MCLK)=0.1s
         __delay_cycles(100000);
 
-        if (last_pattern != curr_pattern) {
-            switch (curr_pattern) {
-                case 0:
-                    update_pattern("Pattern 0");
-                    break;
-                case 1:
-                    update_pattern("Pattern 1");
-                    break;
+        if (curr_pattern == 11) {
+            curr_pattern = last_pattern;
+            if (button_pressed == 'C') {
+                cursor ^= BIT0;
+                lcd_raw_send(0b00001100 | (cursor << 1) | (blink), 2);
+            } else if (button_pressed == '9') {
+                blink ^= BIT0;
+                lcd_raw_send(0b00001100 | (cursor << 1) | (blink), 2);
             }
-            last_pattern = curr_pattern;
         }
 
         if (last_pressed != button_pressed) {
             update_key(button_pressed);
             last_pressed = button_pressed;
+        }
+
+        if (last_pattern != curr_pattern) {
+            switch (curr_pattern) {
+                case 0:
+                    update_pattern("static        ");
+                    break;
+                case 1:
+                    update_pattern("toggle        ");
+                    break;
+                case 2:
+                    update_pattern("up counter    ");
+                    break;
+                case 3:
+                    update_pattern("in and out    ");
+                    break;
+                case 4:
+                    update_pattern("down counter  ");
+                    break;
+                case 5:
+                    update_pattern("rotate 1 left ");
+                    break;
+                case 6:
+                    update_pattern("rotate 7 right");
+                    break;
+                case 7:
+                    update_pattern("fill left     ");
+                    break;
+                case 10:
+                    update_pattern("              ");
+            }
+            last_pattern = curr_pattern;
         }
     }
 }
@@ -174,20 +207,22 @@ int main(void)
 #pragma vector=EUSCI_B0_VECTOR
 __interrupt void EUSCI_B0_I2C_ISR(void){
     int current = UCB0IV;
+    int read_data;
 
     switch(current) {
     case 0x08: // Rx stop condition
         state = 0;
+        P2OUT ^= BIT0;
+        //UCB0CTLW0 |= UCTXACK;
         break;
-    case 0x18: // Rx data
+    case 0x16: // Rx data
+        read_data = UCB0RXBUF;
         switch(state) {
-        case 0: // Rx address
+        case 0: // Rx pattern
+            curr_pattern = read_data;
             break;
-        case 1: // Rx pattern
-            curr_pattern = UCB0RXBUF;
-            break;
-        case 2: // Rx character
-            button_pressed = (char)(UCB0RXBUF);
+        case 1: // Rx character
+            button_pressed = (char)(read_data);
             break;
         }
         state++;
