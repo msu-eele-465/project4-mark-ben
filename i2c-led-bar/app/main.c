@@ -110,7 +110,7 @@ int main(void)
 
 #pragma vector = TIMER0_B0_VECTOR
 __interrupt void Timer_B0_ISR(void) {
-    TB0CCTL0 &= ~CCIFG;
+    TB0CCTL0 &= ~CCIFG
     idle_count++;
     if (idle_count > 5) {
         P2OUT &= ~BIT7;     // Turn off led for idle state
