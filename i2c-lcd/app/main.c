@@ -147,6 +147,15 @@ int main(void)
 
     __enable_interrupt();
 
+    //int i = 0;
+    //while (true) {
+    //    char c[] = {'\0', '\0'};
+    //    c[0] = (char)i;
+    //    lcd_string_write(&c);
+    //    i++;
+    //    i = i % 256;
+    //}
+
 
     while (true)
     {
