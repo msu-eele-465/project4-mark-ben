@@ -24,6 +24,13 @@
             "projectInfo": {
                 "name": "i2c-led-bar",
                 "resourceId": "/i2c-led-bar"
+            },
+            "debuggerSettings": {
+                "targetConfigs/MSP430FR2310.ccxml": {
+                    "TI MSP430 USB1/MSP430": {
+                        "data": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<PropertyValues/>\n"
+                    }
+                }
             }
         }
     ]

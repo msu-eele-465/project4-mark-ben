@@ -64,19 +64,55 @@
 //   July 2015
 //   Built with IAR Embedded Workbench v6.30 & Code Composer Studio v6.1 
 //******************************************************************************
-#include <msp430fr2311.h>
+#include <msp430.h>
 #include "../src/ledbar.h"
+
+
+
+void setup_status_led() {
+    P2DIR |= BIT7;
+    P2OUT &= ~BIT7;
+}
+
+void setup_idle_timer() {
+    
+    TB0CTL = TBSSEL__SMCLK | MC__UP | ID__4;
+    TB0EX0 = TBIDEX__8;
+    TB0CCR0 = 150000;
+    TB0R = 0;
+    TB0CCTL0 = CCIE;
+    TB0CCTL0 &= ~CCIFG;
+}
+
 
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
+    PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
 
-    setup_ledbar_timer();
+    idle_count = 0;
+    setup_idle_timer();
+    setup_ledbar();
+    
+    setup_status_led();
     ledbar_i2c_slave_setup();
                                             // to activate previously configured port settings
+    UCB0CTLW0 &= ~UCSWRST;
+    UCB0IE |= UCRXIE0;
+    __enable_interrupt();
+    
 
     while(1)
     {
+        
+    }
+}
 
+#pragma vector = TIMER0_B0_VECTOR
+__interrupt void Timer_B0_ISR(void) {
+    TB0CCTL0 &= ~CCIFG;
+    idle_count++;
+    if (idle_count > 5) {
+        P2OUT &= ~BIT7;     // Turn off led for idle state
     }
 }

@@ -67,10 +67,24 @@
 #include <msp430.h>
 #include "../src/i2c_master.h"
 #include <string.h>
+#include <stdint.h>
+#include "../src/statusled.h"
 
 volatile int state_variable = 0;
 char keypad_input[4] = {};
 volatile int input_index = 0;
+volatile int send_i2c_update = 0;
+
+
+volatile int pattern = -1; // Current pattern
+volatile int step[4] = {0, 0, 0, 0}; // Current step in each pattern
+volatile float base_tp = 0.5;    // Default 1.0s
+
+const uint8_t pattern_0 = 0b10101010;
+const int pattern_1[4] = {0b10101010, 0b10101010, 0b01010101, 0b01010101};  // Pattern 1
+const int pattern_3[6] = {0b00011000, 0b00100100,   // Pattern 3
+                          0b01000010, 0b10000001,
+                          0b01000010, 0b00100100};
 
 void setup_heartbeat() {
     // --    LED   --
@@ -87,16 +101,87 @@ void setup_heartbeat() {
     TB0CCTL0 &= ~CCIFG;
 }
 
+void rgb_timer_setup() {
+    P3DIR |= (BIT2 | BIT7);                                 // Set as OUTPUTS
+    P2DIR |= BIT4;
+    P3OUT |= (BIT2 | BIT7);                                 // Start HIGH
+    P2OUT |= BIT4;
+
+    TB2R = 0;
+    TB2CTL |= (TBSSEL__SMCLK | MC__UP);                     // Small clock, Up counter
+    TB2CCR0 = 512;                                          // 1 sec timer
+    TB2CCTL0 |= CCIE;                                       // Enable Interrupt
+    TB2CCTL0 &= ~CCIFG;
+}
+
+void setup_ledbar_update_timer() {
+    TB1CTL = TBSSEL__ACLK | MC__UP | ID__4;     // Use ACLK, up mode, divider 4
+    TB1CCR0 = (int)((32768 * base_tp) / 4.0);                          // Set update interval based on base_tp
+    TB1CCTL0 = CCIE;                            // Enable interrupt for TB1 CCR0
+}
+
+uint8_t compute_ledbar() {
+    uint8_t led_pins = 0;
+    switch (pattern) {
+        case 0:
+            led_pins = pattern_0;
+            break;
+        case 1:
+            led_pins = pattern_1[step[pattern]];
+            step[pattern] = (step[pattern] + 1) % 4;
+            break;
+        case 2:
+            led_pins = step[pattern];
+            step[pattern] = (step[pattern] + 1) % 255;
+            break;
+        case 3:
+            led_pins = pattern_3[step[pattern]]; // Pattern 3
+            step[pattern] = (step[pattern] + 1) % 6; // advance to the next step
+            break;
+        default:
+            break; 
+    }
+    return led_pins;
+}
+
+void change_led_pattern(int new_pattern) {
+    if (new_pattern == pattern) {
+        step[pattern] = 0;  // Just reset the step count if the same pattern is selected
+    }
+
+    pattern = new_pattern;
+}
+
+void update_slave_ledbar() {
+    volatile ledbar_pattern = compute_ledbar();
+    //i2c_write_led(ledbar_pattern);
+}
+
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;               // Stop watchdog timer
     
+    i2c_master_setup();
     setup_keypad();
     setup_heartbeat();
+    setup_ledbar_update_timer();
+    rgb_timer_setup();
+
+
+
+    send_buff = 0;
+    ready_to_send = 0;
+
+
 
 
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
                                             // to activate previously configured port settings
+    UCB0CTLW0 &= ~UCSWRST;              // Take out of reset
+    UCB0IE |= UCTXIE0;
+    //UCB0IE |= UCRXIE0;
+
+    __enable_interrupt();
 
     while(1)
     {
@@ -106,7 +191,7 @@ int main(void)
         if (state_variable == 0 || state_variable == 2) {                      // Locked
             
             if (key != '\0') {                                                 // Check for key
-
+                
                 state_variable = 2;                                            // if key, unlocking
                 if (input_index < 3) {                                         
                     keypad_input[input_index] = key;
@@ -117,12 +202,17 @@ int main(void)
                 }
             }   
         } else if(state_variable == 1) {
+            if (key != '\0') {
+                send_i2c_update = 1;
+            }
            switch (key) {                                          // Lock if D, otherwise update pattern/base transition period
-                case 'D':                                                   
-                    i2c_write_led(6);
+                case 'D':     
+                    i2c_write_lcd(10, ' ');                                              
+                    //change_led_pattern(-1);
+                    //i2c_write_led(6);
                     state_variable = 0;
                     input_index = 0;
-                    //change_led_pattern(-1);                         
+                    send_i2c_update = 0;                
                     memset(keypad_input, 0, sizeof(keypad_input));  // Clear input
                     break;
                 case '0':
@@ -154,28 +244,29 @@ int main(void)
                     i2c_write_lcd(7, '7');
                     break;
                 case '8':
-                    i2c_write_lcd(8, '8');
+                    i2c_write_lcd(11, '8');
                     break;
                 case '9':
-                    i2c_write_lcd(9, '9');
+                    i2c_write_lcd(11, '9');
                     break;                        
                 case 'A':
-                    i2c_write_lcd(0, 'A');
-                    //if (base_tp > 0.25) {
-                    //    base_tp -= 0.25;
+                    i2c_write_lcd(11, 'A');
+                    if (base_tp > 0.25) {
+                        base_tp -= 0.25;
+                    }
                     break;
                 case 'B':
-                    i2c_write_lcd(0, 'B');
-                    //base_tp += 0.25;
+                    i2c_write_lcd(11, 'B');
+                    base_tp += 0.25;
                     break;
                 case 'C':
-                    i2c_write_lcd(0, 'C');
+                    i2c_write_lcd(11, 'C');
                     break;
                 case '*':
-                    i2c_write_lcd(0, '*');
+                    i2c_write_lcd(11, '*');
                     break;
                 case '#':
-                    i2c_write_lcd(0, '#');
+                    i2c_write_lcd(11, '#');
                     break;                                                                                                 
                 default:
                     input_index = 0;
@@ -193,4 +284,24 @@ int main(void)
 __interrupt void Timer_B0_ISR(void) {
     TB0CCTL0 &= ~CCIFG;
     P6OUT ^= BIT6;
+}
+
+#pragma vector = TIMER1_B0_VECTOR
+__interrupt void Timer_B1_ISR(void) {
+    TB1CCTL0 &= ~CCIFG;
+
+    if (state_variable == 1 && send_i2c_update) {
+        //update_slave_ledbar();
+        
+    }
+    
+    TB1CCR0 = (int)((32768 * base_tp) / 4.0);
+}
+
+#pragma vector=EUSCI_B0_VECTOR
+__interrupt void EUSCI_B0_ISR(void){
+    int current = UCB0IV;
+        UCB0TXBUF = send_buff;
+        ready_to_send = 1;
+
 }

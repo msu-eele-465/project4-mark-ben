@@ -2,6 +2,7 @@
 #include <msp430.h>
 #include <stdbool.h>
 #include <msp430fr2355.h>
+#include "keypad.h"
 
 char code[] = "5381";
 

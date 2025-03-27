@@ -9,15 +9,13 @@ volatile float base_tp = 0.5;    // Default 1.0s
 
 
 // Setup the timer for the ledbar
-void setup_ledbar_timer() {
-    TB0CTL |= (TBSSEL__ACLK | MC__UP | ID__4);     // ACLK, Up mode, div by 4
-    TB0CCR0 =  (int) ((32768 * base_tp) / 4.0);  // Set interval 
+void setup_ledbar() {
     P1DIR |= (BIT0 | BIT1 | BIT4 | BIT5 | BIT6 | BIT7); // Setup all the pins
     P2DIR |= (BIT0 | BIT6);
 }
 
-void update_led_bar_pins(int pins) {
-/*     int current_pins = pins;
+void update_ledbar_pins(int pins) {
+    int current_pins = pins;
 
     if ((current_pins & 0b00000001) == 1) {
         P1OUT |= BIT0;
@@ -72,6 +70,6 @@ void update_led_bar_pins(int pins) {
         P2OUT |= BIT6;
     } else {
         P2OUT &= ~BIT6;
-    } */
+    }
 
 }
