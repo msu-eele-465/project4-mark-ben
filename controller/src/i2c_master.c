@@ -2,12 +2,6 @@
 #include <msp430.h>
 
 void i2c_master_setup(void) {
-
-    //-- Configure GPIO --------
-    P1SEL1 &= ~(BIT2 | BIT3);           // eUSCI_B0
-    P1SEL0 |= (BIT2 | BIT3);
-
-
     //-- eUSCI_B0 --
     UCB0CTLW0 = UCSWRST;
 
@@ -18,9 +12,6 @@ void i2c_master_setup(void) {
     UCB0CTLW0 |= UCMST;                 // Master
     UCB0CTLW0 |= UCTR;                  // Tx
     
-    
-    UCB0CTLW0 &= ~UCSWRST;              // Take out of reset
-
 }
 
 void i2c_write_lcd(unsigned int pattNum, char character) {
@@ -32,8 +23,6 @@ void i2c_write_lcd(unsigned int pattNum, char character) {
     while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
     UCB0TXBUF = pattNum;                // Send data byte
 
-    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
-    UCB0TXBUF = character;                // Send data byte
 
     while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
     UCB0CTLW0 |= UCTXSTP;               // Stop condition
@@ -45,11 +34,5 @@ void i2c_write_led(unsigned int pattNum) {
     UCB0TBCNT = 0x01;                   // Number of bytes
     UCB0CTLW0 |= UCTR;                  // Transmit Mode
     UCB0CTLW0 |= UCTXSTT;               // Generate Start Condition
-
-    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
-    UCB0TXBUF = pattNum;                   // Send data byte
-
-    while (!(UCB0IFG & UCTXIFG));       // Wait for TX Buffer
-    UCB0CTLW0 |= UCTXSTP;               // Stop condition
 
 }

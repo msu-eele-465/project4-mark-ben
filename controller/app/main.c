@@ -65,7 +65,6 @@
 //   Built with IAR Embedded Workbench v6.50.0 & Code Composer Studio v6.2.0
 //******************************************************************************
 #include <msp430.h>
-#include "../src/keypad.h"
 #include "../src/i2c_master.h"
 #include <string.h>
 
@@ -95,8 +94,6 @@ int main(void)
     setup_keypad();
     setup_heartbeat();
 
-    P1OUT &= ~BIT0;                         // Clear P1.0 output latch for a defined power-on state
-    P1DIR |= BIT0;                          // Set P1.0 to output direction
 
     PM5CTL0 &= ~LOCKLPM5;                   // Disable the GPIO power-on default high-impedance mode
                                             // to activate previously configured port settings
@@ -129,22 +126,18 @@ int main(void)
                     memset(keypad_input, 0, sizeof(keypad_input));  // Clear input
                     break;
                 case '0':
-                    i2c_write_led(0);
                     i2c_write_lcd(0, '0');
                     //change_led_pattern(0);
                     break;
                 case '1':
-                    i2c_write_led(1);
                     i2c_write_lcd(1, '1');
                     //change_led_pattern(1);
                     break;
                 case '2':
-                    i2c_write_led(2);
                     i2c_write_lcd(2, '2');
                     //change_led_pattern(2);
                     break;
                 case '3':
-                    i2c_write_led(3);
                     i2c_write_lcd(3, '3');
                     //change_led_pattern(3);
                     break;
@@ -167,27 +160,22 @@ int main(void)
                     i2c_write_lcd(9, '9');
                     break;                        
                 case 'A':
-                    i2c_write_led(4);
                     i2c_write_lcd(0, 'A');
                     //if (base_tp > 0.25) {
                     //    base_tp -= 0.25;
                     break;
                 case 'B':
-                    i2c_write_led(5);
                     i2c_write_lcd(0, 'B');
                     //base_tp += 0.25;
                     break;
                 case 'C':
                     i2c_write_lcd(0, 'C');
-                    //base_tp += 0.25;
                     break;
                 case '*':
                     i2c_write_lcd(0, '*');
-                    //base_tp += 0.25;
                     break;
                 case '#':
                     i2c_write_lcd(0, '#');
-                    //base_tp += 0.25;
                     break;                                                                                                 
                 default:
                     input_index = 0;
